@@ -1,0 +1,20 @@
+{
+  "name": "mysql-redis",
+  "version": "0.0.1",
+  "description": "caching layer for mysql",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "mysql",
+    "redis",
+    "cache"
+  ],
+  "author": "Gi Singh",
+  "license": "MIT",
+  "dependencies": {
+    "farmhash": "^2.1.0",
+    "string64": "^2.0.0"
+  }
+}
