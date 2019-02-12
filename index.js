@@ -19,7 +19,20 @@ class MysqlRedis {
         };
     }
 
+    queryPromise(sql, values = null, options = null) {
+        return new Promise((resolve, reject) => {
+            this.query(sql, values, options, (err, result, fields) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve([result, fields]);
+                }
+            });
+        });
+    }
+
     query(sql, values, options, cb) {
+        options = options || !Array.isArray(values) ? values : null;
         cb = cb || options || values; //in case expire is not provided, cb is third arg
 
         const _s = sql + JSON.stringify(values);
@@ -51,11 +64,10 @@ class MysqlRedis {
                     }
                 );
             } else {
-                return cb(null, JSON.parse(redisResult), [{ cacheHit: true }]);
+                return cb(null, JSON.parse(redisResult), [{ cacheHit: key }]);
             }
         });
     }
 }
 
 module.exports = { MysqlRedis };
-

@@ -43,12 +43,37 @@ const mysqlRedis = new MysqlRedis(
 ```
 Now if you wish to get something from cache, just use mysqlRedis.query instead of your mysql connection's query. (Use your mysql connection normally to bypass cache)
 ```
-mysqlRedis.query('select * from logs where id =?",["some-log-id"],(err,data,fields)=>{
+mysqlRedis.query('select * from logs where id =?",["some-log-id"], (err,data,fields)=>{
 	console.log(data)
-	// if served by Redis, fields value is [{ cacheHit === true }]
+	// if served by Redis, fields value is something like [ { cacheHit: 'sql.Dh9VSNbN5V$' } ]
 	// else mysql fields
 });
 ```
+
+or if you like promises, then:
+
+```
+in some async fn() {
+
+    [result,fields]=await mysqlRedis.queryPromise("select 1+?+?",[2,3]);
+    
+}
+
+```
+if you want to have dfferent keyPrefix per query, or different expire/TTL, provide an option object as 
+
+```
+mysqlRedis.query('select * from logs where id =?",["some-log-id"],{ keyPrefix:'sql-abc-', expire:3600 }, (err,data,fields)=>{
+	console.log(data)
+	// if served by Redis, fields value is something like [ { cacheHit: 'sql.Dh9VSNbN5V$' } ]
+	// else mysql fields
+});
+
+// promise
+[result,fields]=await mysqlRedis.queryPromise("select 1+?+?",[2,3],{ keyPrefix:'sql-abc-', expire:3600 });
+
+```
+
  
 ## Contributing
 
