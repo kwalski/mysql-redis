@@ -1,5 +1,6 @@
 
-# MysqlRedis
+
+# mysql-redis
 
 Transform your mysql server with Redis caching layer for mysql/mysql2. MysqlRedis check if there is a recently cached result for the query in redis, if not, it will retrieve data from mysql and cache it in redis for future queries
 
@@ -14,19 +15,39 @@ Use _along_ with mysql and redis
 ## Getting Started
 
 ### Pre-Requisites
-You need mysql or mysql2, and redis
+mysql or mysql2, and redis.
+
+For async/await api, you can use mysql2's promise api and [redis-async](https://www.npmjs.com/package/mysql-redis)
 
 ### Installing
 `npm i mysql-redis --save` 
 
-## API
+### Usage
 ```
 const { MysqlRedis } = require("./mysql-redis");
+
+// or if you use async await api
+const { MqlRedisAsync } = require("./mysql-redis");
 ```
 
 ####  Creating an instance of MysqlRedis requires 
 - a mysql connection or pool (mysqlRedis will call it's query method when no cache found)
 - redis connection (mysqlRedis will call its set and get methods)
+- cache options (optional)  
+
+####  Creating an instance of MysqlRedisAsync requires 
+- a mysql connection or pool promise 
+	``` 
+	// Example
+	const  poolPromise  =  mysql.createPool({host:'localhost', user:  'root', database:  'test'}).promise();
+	```
+- redis async 
+	```
+	eg:
+	const  asyncRedis  =  require("async-redis");
+	const  redis  =  asyncRedis.createClient(redisOptions);
+
+	```
 - cache options (optional)  
 
 ```
@@ -53,14 +74,23 @@ mysqlRedis.query('select * from logs where id =?",["some-log-id"], (err,data,fie
 or if you like promises, then:
 
 ```
-in some async fn() {
+const mysqlRedis = new MysqlRedisAsync(
+    mysqlConnection,
+    redisConnection,
+    cacheOptions
+);
 
-    [result,fields]=await mysqlRedis.queryPromise("select 1+?+?",[2,3]);
-    
+...
+try{
+
+	[result,fields]=await mysqlRedis.query("select 1+?+?",[2,3]);
+
+}catch(err){
+	// handle err
 }
 
 ```
-if you want to have dfferent keyPrefix per query, or different expire/TTL, provide an option object as 
+if you want to specify different keyPrefix or different expire/TTL per query, then provide it as option object as 
 
 ```
 mysqlRedis.query('select * from logs where id =?",["some-log-id"],{ keyPrefix:'sql-abc-', expire:3600 }, (err,data,fields)=>{
@@ -69,8 +99,9 @@ mysqlRedis.query('select * from logs where id =?",["some-log-id"],{ keyPrefix:'s
 	// else mysql fields
 });
 
-// promise
-[result,fields]=await mysqlRedis.queryPromise("select 1+?+?",[2,3],{ keyPrefix:'sql-abc-', expire:3600 });
+
+// promise api
+[result,fields]=await mysqlRedis.query("select 1+?+?",[2,3],{ keyPrefix:'your-preferred-prefix-', expire:3600 });
 
 ```
 
