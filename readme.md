@@ -15,7 +15,7 @@ Use _along_ with mysql and redis. This is not a replacement of either. Use it wi
 ### Hashing 
  The above is achieved by creating a unique hash for every query
  
-  `"select 1+2"` => #️⃣
+    `"select 1+2"` => #️⃣
   
 In redis, the hash and query results are stored as key-value pair
 
