@@ -1,10 +1,48 @@
 const farmhash = require("farmhash");
 const { String64 } = require("string64");
 const str64 = new String64();
+const crypto = require("crypto");
+
+const HashTypes = {
+    full: 0,
+    farmhash32: 1,
+    farmhash64: 2,
+    blake2b512: 3
+};
+
+Object.freeze(HashTypes);
+
 const defaultCacheOptions = {
     expire: 2629746,
-    keyPrefix: "sql."
+    keyPrefix: "sql.",
+    hashType: HashTypes.farmhash
 };
+
+const hash = (sql, hashType) => {
+    switch (hashType) {
+        case HashTypes.blake2b512:
+            return crypto
+                .createHash("blake2b512")
+                .update(sql)
+                .digest("base64");
+            break;
+
+        case HashTypes.full:
+            return sql;
+            break;
+        case HashTypes.farmhash64:
+            return str64.toString64(
+                Number.parseInt(farmhash.fingerprint32(sql))
+            );
+            break;
+        case HashTypes.farmhash32:
+        default:
+            return str64.toString64(
+                Number.parseInt(farmhash.fingerprint64(sql))
+            );
+    }
+};
+
 class MysqlRedis {
     constructor(mysqlConn, redisClient, cacheOptions) {
         this.mysqlConn = mysqlConn;
@@ -15,7 +53,10 @@ class MysqlRedis {
                 defaultCacheOptions.expire,
             keyPrefix:
                 (cacheOptions && cacheOptions.keyPrefix) ||
-                defaultCacheOptions.keyPrefix
+                defaultCacheOptions.keyPrefix,
+            hashType:
+                (cacheOptions && cacheOptions.hashType) ||
+                defaultCacheOptions.hashType
         };
     }
 
@@ -24,10 +65,15 @@ class MysqlRedis {
         cb = cb || options || values; //in case expire is not provided, cb is third arg
 
         const _s = sql + JSON.stringify(values);
-        const fingerprint = farmhash.fingerprint64(_s);
-        const key =
-            ((options && options.keyPrefix) || this.cacheOptions.keyPrefix) +
-            str64.toString64(Number.parseInt(fingerprint));
+
+        const prefix =
+            (options && options.keyPrefix) || this.cacheOptions.keyPrefix;
+
+        const hashType =
+            (options && options.hashType) || this.cacheOptions.hashType;
+
+        const key = prefix + hash(_s, hashType);
+
         this.redisClient.get(key, (redisErr, redisResult) => {
             if (redisErr || redisResult == null) {
                 this.mysqlConn.query(
@@ -58,7 +104,6 @@ class MysqlRedis {
     }
 }
 
-
 // PROMISE API
 
 class MysqlRedisAsync {
@@ -71,7 +116,10 @@ class MysqlRedisAsync {
                 defaultCacheOptions.expire,
             keyPrefix:
                 (cacheOptions && cacheOptions.keyPrefix) ||
-                defaultCacheOptions.keyPrefix
+                defaultCacheOptions.keyPrefix,
+            hashType:
+                (cacheOptions && cacheOptions.hashType) ||
+                defaultCacheOptions.hashType
         };
     }
 
@@ -82,22 +130,29 @@ class MysqlRedisAsync {
             options = options || !Array.isArray(values) ? values : null;
 
             const _s = sql + JSON.stringify(values);
-            const fingerprint = farmhash.fingerprint64(_s);
-            const key =
-                ((options && options.keyPrefix) ||
-                    this.cacheOptions.keyPrefix) +
-                str64.toString64(Number.parseInt(fingerprint));
+            const prefix =
+                (options && options.keyPrefix) || this.cacheOptions.keyPrefix;
+
+            const hashType =
+                (options && options.hashType) || this.cacheOptions.hashType;
+
+            const key = prefix + hash(_s, hashType);
+
             try {
                 const redisResult = await this.redisClient.get(key);
+
                 if (redisResult) {
                     resolve([JSON.parse(redisResult), [{ cacheHit: key }]]);
                 } else {
                     try {
-                        const [mysqlResult, fields] = await this.mysqlConn.query(
+                        const [
+                            mysqlResult,
+                            fields
+                        ] = await this.mysqlConn.query(
                             sql,
                             Array.isArray(values) ? values : []
                         );
-                         await this.redisClient.set(
+                        await this.redisClient.set(
                             key,
                             JSON.stringify(mysqlResult),
                             "EX",
@@ -110,8 +165,8 @@ class MysqlRedisAsync {
                     }
                 }
             } catch (redisErr) {
-                 try {
-                  const  [mysqlResult, fields] = await this.mysqlConn.query(
+                try {
+                    const [mysqlResult, fields] = await this.mysqlConn.query(
                         sql,
                         Array.isArray(values) ? values : []
                     );
@@ -124,4 +179,4 @@ class MysqlRedisAsync {
     }
 }
 
-module.exports = { MysqlRedis, MysqlRedisAsync };
+module.exports = { MysqlRedis, MysqlRedisAsync, HashTypes };

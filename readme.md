@@ -1,8 +1,26 @@
 
 
-# mysql-redis
 
-Transform your mysql server with Redis caching layer for mysql/mysql2. MysqlRedis check if there is a recently cached result for the query in redis, if not, it will retrieve data from mysql and cache it in redis for future queries
+# mysql-redis :rocket:
+
+Transform your mysql server with `Redis` caching layer for `mysql/mysql2`.
+- MysqlRedis checks if there is a cached result for the query in redis 
+- if not found in cache, it will retrieve data from mysql and on successful result cache it in redis for future queries
+- if redis is unavailable or errors, query will be served by mysql
+- queries are identified using query hash. Currently supported hash types are: 
+  **farmhash32** 
+  Example redis key: `sql.2jNDCJ`
+  Fast!!! Over ~5 million hashes/s on macbook pro, most compact key
+  **farmhash64** 
+  Example redis key:  `sql.DiHlF3yv0V$` 
+  fast (~2 million hashes/sec on macbook pro )
+  *farmhash32/64* use Google's farmhash, non-crypto algorithm (if you have millions of possible queries, these hashes can collide :collision:) so use it for hundreds or thousands of static queries
+**blake2b512** 
+Example redis key: `sql.4KbMOx3xJi+7mJNy0tDbju6NY9uHqOroDsG4rYjpHK1mEwXJokls5Ofdjs7iDsn3cAtibgUkT8RDdpCE2phhiQ==` 
+Crypto safe, ~500k hashes/sec 
+Use it for caching millions of different queries (eg. chats, logs)
+Note that the key is longer than farmhash 
+**full** matches full query string. Use this if you are paranoid or your queries are smaller than blake2b512 keys 
 
 ### Use-case
 Use _along_ with mysql and redis
@@ -24,10 +42,10 @@ For async/await api, you can use mysql2's promise api and [redis-async](https://
 
 ### Usage
 ```
-const { MysqlRedis } = require("./mysql-redis");
+const { MysqlRedis, HashTypes } = require("mysql-redis");
 
 // or if you use async await api
-const { MqlRedisAsync } = require("./mysql-redis");
+const { MysqlRedisAsync, HashTypes } = require("mysql-redis");
 ```
 
 ####  Creating an instance of MysqlRedis requires 
@@ -38,10 +56,10 @@ const { MqlRedisAsync } = require("./mysql-redis");
 ####  Creating an instance of MysqlRedisAsync requires 
 - a mysql connection or pool promise 
 	``` 
-	// Example
-	const  poolPromise  =  mysql.createPool({host:'localhost', user:  'root', database:  'test'}).promise();
+	// Example from mysql2 docs:
+	const  poolPromise  =  mysql.createPool({host:'localhost', user:  'root', database:  'test'}).promise(); 
 	```
-- redis async 
+- async redis
 	```
 	eg:
 	const  asyncRedis  =  require("async-redis");
@@ -54,6 +72,7 @@ const { MqlRedisAsync } = require("./mysql-redis");
 const cacheOptions = {
     expiry: 2629746,// seconds, defaults to 30 days 
     keyPrefix: "sql." // default
+    hashType: HashTypes.farmhash
 };
 
 const mysqlRedis = new MysqlRedis(
@@ -90,10 +109,16 @@ try{
 }
 
 ```
-if you want to specify different keyPrefix or different expire/TTL per query, then provide it as option object as 
+You can override cache options per query as below:
 
 ```
-mysqlRedis.query('select * from logs where id =?",["some-log-id"],{ keyPrefix:'sql-abc-', expire:3600 }, (err,data,fields)=>{
+mysqlRedis.query('select * from logs where id =?",["some-log-id"],
+	{ //cache option
+		keyPrefix:'sql-abc-', 
+		expire:3600, 
+		hashType: HashTypes.farmhash 
+	}, 
+	(err,data,fields)=>{
 	console.log(data)
 	// if served by Redis, fields value is something like [ { cacheHit: 'sql.Dh9VSNbN5V$' } ]
 	// else mysql fields
