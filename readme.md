@@ -84,8 +84,8 @@ const { MysqlRedisAsync, HashTypes } = require("mysql-redis");
 ```
 const cacheOptions = {
     expiry: 2629746,// seconds, defaults to 30 days 
-    keyPrefix: "sql." // default
-    hashType: HashTypes.farmhash
+    keyPrefix: "sql.", // default
+    hashType: HashTypes.farmhash32 //default
 };
 
 const mysqlRedis = new MysqlRedis(
@@ -129,7 +129,7 @@ mysqlRedis.query('select * from logs where id =?",["some-log-id"],
 	{ //cache option
 		keyPrefix:'sql-abc-', 
 		expire:3600, 
-		hashType: HashTypes.farmhash 
+		hashType: HashTypes.farmhash64 
 	}, 
 	(err,data,fields)=>{
 	console.log(data)
@@ -155,4 +155,3 @@ mysqlRedis.query('select * from logs where id =?",["some-log-id"],
 ## License
 
 This project is licensed under the [MIT](./LICENSE).
-
