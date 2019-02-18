@@ -16,5 +16,14 @@
   "dependencies": {
     "farmhash": "^2.1.0",
     "string64": "^2.0.0"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kwalski/mysql-redis.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kwalski/mysql-redis/issues"
+  },
+  "homepage": "https://github.com/kwalski/mysql-redis#readme"
 }
