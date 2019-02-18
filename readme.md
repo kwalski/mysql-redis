@@ -7,20 +7,33 @@ Transform your mysql server with `Redis` caching layer for `mysql/mysql2`.
 - MysqlRedis checks if there is a cached result for the query in redis 
 - if not found in cache, it will retrieve data from mysql and on successful result cache it in redis for future queries
 - if redis is unavailable or errors, query will be served by mysql
-- queries are identified using query hash. Currently supported hash types are: 
-  **farmhash32** 
-  Example redis key: `sql.2jNDCJ`
-  Fast!!! Over ~5 million hashes/s on macbook pro, most compact key
-  **farmhash64** 
-  Example redis key:  `sql.DiHlF3yv0V$` 
-  fast (~2 million hashes/sec on macbook pro )
+
+### Hashing 
+ The above is achieved by creating a unique hash for every query
+  `"select 1+2"` => #️⃣
+In redis, the hash and query results are stored as key-value pair
+#️⃣=> `[ { '1+2': 3 } ]`
+
+#### Currently supported hash types are: 
+  
+**farmhash32** ⚡🗜️
+  Example redis key: `prefix.2jNDCJ`
+  Fast!!! Over ~5 million hashes/s on reference machine most compact key.
+  
+ **farmhash64** 
+  Example redis key:  `prefix.DiHlF3yv0V$` 
+  fast (~2 million hashes/sec on reference machine )
   *farmhash32/64* use Google's farmhash, non-crypto algorithm (if you have millions of possible queries, these hashes can collide :collision:) so use it for hundreds or thousands of static queries
-**blake2b512** 
-Example redis key: `sql.4KbMOx3xJi+7mJNy0tDbju6NY9uHqOroDsG4rYjpHK1mEwXJokls5Ofdjs7iDsn3cAtibgUkT8RDdpCE2phhiQ==` 
-Crypto safe, ~500k hashes/sec 
+
+**blake2b512** 🛡️
+Example redis key: `prefix.4KbMOx3xJi+7mJNy0tDbju6NY9uHqOroDsG4rYjpHK1mEwXJokls5Ofdjs7iDsn3cAtibgUkT8RDdpCE2phhiQ==` 
+Crypto safe, ~500k hashes/sec on reference machine
 Use it for caching millions of different queries (eg. chats, logs)
-Note that the key is longer than farmhash 
-**full** matches full query string. Use this if you are paranoid or your queries are smaller than blake2b512 keys 
+Note that the key is longer than farmhash.
+
+**full** 
+Matches full query string. Use this if you are paranoid or if your queries are smaller than blake2b512 hashes
+
 
 ### Use-case
 Use _along_ with mysql and redis
