@@ -61,7 +61,7 @@ class MysqlRedis {
     }
 
     query(sql, values, options, cb) {
-        options = options || !Array.isArray(values) ? values : null;
+        options = options || (!Array.isArray(values) ? values : null);
         cb = cb || options || values; //in case expire is not provided, cb is third arg
 
         const _s = sql + JSON.stringify(values);
@@ -72,7 +72,7 @@ class MysqlRedis {
         const hashType =
             (options && options.hashType) || this.cacheOptions.hashType;
 
-        const key = prefix + hash(_s, hashType);
+        const key = prefix + ((options && options.hash) || hash(_s, hashType));
 
         this.redisClient.get(key, (redisErr, redisResult) => {
             if (redisErr || redisResult == null) {
@@ -127,7 +127,7 @@ class MysqlRedisAsync {
         // cb = cb || options || values; //in case expire is not provided, cb is third arg
 
         return new Promise(async (resolve, reject) => {
-            options = options || !Array.isArray(values) ? values : null;
+            options = options || (!Array.isArray(values) ? values : null);
 
             const _s = sql + JSON.stringify(values);
             const prefix =
@@ -136,8 +136,9 @@ class MysqlRedisAsync {
             const hashType =
                 (options && options.hashType) || this.cacheOptions.hashType;
 
-            const key = prefix + hash(_s, hashType);
-
+            const key =
+                prefix + ((options && options.hash) || hash(_s, hashType));
+            console.log(key, options);
             try {
                 const redisResult = await this.redisClient.get(key);
 

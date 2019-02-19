@@ -1,3 +1,4 @@
+
 # mysql-redis :rocket:
 
 Transform your mysql server with `Redis` caching layer for `mysql/mysql2`.
@@ -24,16 +25,16 @@ In redis, the hash and query results are stored as key-value pair
 #### Currently supported hash types are:    
   
 **farmhash32** ⚡🗜️
-Example redis key: `prefix.2jNDCJ`
+Example redis key: *prefix.*`2jNDCJ`
 Fast!!! Over ~5 million hashes/s on reference machine. Most compact key.
 
 **farmhash64** 
-Example redis key:  `prefix.DiHlF3yv0V$` 
+Example redis key:  *prefix.*`DiHlF3yv0V$` 
 fast (~2 million hashes/sec on reference machine )
 *farmhash32/64* use Google's farmhash, non-crypto algorithm (if you have millions of possible queries, these hashes can collide :collision:) so use it for hundreds or thousands of static queries
 
 **blake2b512** 🛡️
-Example redis key: `prefix.4KbMOx3xJi+7mJNy0tDbju6NY9uHqOroDsG4rYjpHK1mEwXJokls5Ofdjs7iDsn3cAtibgUkT8RDdpCE2phhiQ==` 
+Example redis key: *prefix.*`4KbMOx3xJi+7mJNy0tDbju6NY9uHqOroDsG4rYjpHK1mEwXJokls5Ofdjs7iDsn3cAtibgUkT8RDdpCE2phhiQ==` 
 Crypto safe, ~500k hashes/sec on reference machine
 Use it for caching millions of different queries (eg. chats, logs)
 Note that the key is longer than farmhash.
@@ -41,11 +42,12 @@ Note that the key is longer than farmhash.
 **full** 
 Matches full query string. Use this if you are paranoid or if your queries are smaller than blake2b512 hashes
 
+Or you can **provide your own hash *per* query**, eg, prefix-`p.123` might be more compact for `select * from person p where id = ?,123` 
 
 ## Getting Started
 
 ### Pre-Requisites
-mysql or mysql2, and redis.
+mysql ([mysql](https://www.npmjs.com/package/mysql)/[mysql2](https://www.npmjs.com/package/mysql2)), and redis ([redis](https://www.npmjs.com/package/redis)/[ioredis](https://www.npmjs.com/package/ioredis). internally mysqlRedis relies on mysql/mysql2's `query` function and redis's `get` and `set` functions
 
 For async/await api, you can use mysql2's promise api and [redis-async](https://www.npmjs.com/package/mysql-redis)
 
@@ -111,7 +113,7 @@ const mysqlRedis = new MysqlRedisAsync(
     cacheOptions
 );
 
-...
+... in an async function ...
 try{
 
 	[result,fields]=await mysqlRedis.query("select 1+?+?",[2,3]);
@@ -129,6 +131,7 @@ mysqlRedis.query('select * from logs where id =?",["some-log-id"],
 		keyPrefix:'sql-abc-', 
 		expire:3600, 
 		hashType: HashTypes.farmhash64 
+        //or hash: myHash <- provide your own 
 	}, 
 	(err,data,fields)=>{
 	console.log(data)
@@ -138,7 +141,13 @@ mysqlRedis.query('select * from logs where id =?",["some-log-id"],
 
 
 // promise api
-[result,fields]=await mysqlRedis.query("select 1+?+?",[2,3],{ keyPrefix:'your-preferred-prefix-', expire:3600 });
+[result,fields]=await mysqlRedis.query("select 1+?+?",[2,3],
+   { //cache option
+		keyPrefix:'sql-abc-', 
+		expire:3600, 
+		hashType: HashTypes.farmhash64 
+        //or hash: myHash <- provide your own 
+	});
 
 ```
 
