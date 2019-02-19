@@ -49,7 +49,7 @@ Or you can **provide your own hash *per* query**, eg, *prefix.*`p.123` to repres
 ### Pre-Requisites
 mysql ([mysql](https://www.npmjs.com/package/mysql)/[mysql2](https://www.npmjs.com/package/mysql2)), and redis ([redis](https://www.npmjs.com/package/redis)/[ioredis](https://www.npmjs.com/package/ioredis)). Internally MysqlRedis relies on mysql/mysql2's `query` function and redis's `get` and `set` functions
 
-For async/await api, you can use mysql2's promise api and [redis-async](https://www.npmjs.com/package/mysql-redis)
+For async/await api, you can use mysql2's promise api and [async-redis](https://www.npmjs.com/package/async-redis)
 
 ### Installing
 `npm i mysql-redis --save` 
