@@ -31,18 +31,18 @@ Fast!!! Over ~5 million hashes/s on reference machine. Most compact key.
 **farmhash64** 
 Example redis key:  *prefix.*`DiHlF3yv0V$` 
 fast (~2 million hashes/sec on reference machine )
-*farmhash32/64* use Google's farmhash, non-crypto algorithm (if you have millions of possible queries, these hashes can collide :collision:) so use it for hundreds or thousands of static queries
+*farmhash32/64* use Google's farmhash, non-crypto algorithm (if you have millions of possible queries, these hashes can collide :collision:)
 
 **blake2b512** 🛡️
 Example redis key: *prefix.*`4KbMOx3xJi+7mJNy0tDbju6NY9uHqOroDsG4rYjpHK1mEwXJokls5Ofdjs7iDsn3cAtibgUkT8RDdpCE2phhiQ==` 
-Crypto safe, ~500k hashes/sec on reference machine
+Crypto safe, ~500k hashes/sec on reference machine.
 Use it for caching millions of different queries (eg. chats, logs)
 Note that the key is longer than farmhash.
 
 **full** 
 Matches full query string. Use this if you are paranoid or if your queries are smaller than blake2b512 hashes
 
-Or you can **provide your own hash *per* query**, eg, prefix-`p.123` to represent `select * from person p where id = ?,123` 
+Or you can **provide your own hash *per* query**, eg, *prefix.*`p.123` to represent `select * from person p where id = ?,123` 
 
 ## Getting Started
 

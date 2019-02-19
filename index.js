@@ -138,8 +138,7 @@ class MysqlRedisAsync {
 
             const key =
                 prefix + ((options && options.hash) || hash(_s, hashType));
-            console.log(key, options);
-            try {
+             try {
                 const redisResult = await this.redisClient.get(key);
 
                 if (redisResult) {
