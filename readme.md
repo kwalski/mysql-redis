@@ -42,12 +42,12 @@ Note that the key is longer than farmhash.
 **full** 
 Matches full query string. Use this if you are paranoid or if your queries are smaller than blake2b512 hashes
 
-Or you can **provide your own hash *per* query**, eg, prefix-`p.123` might be more compact for `select * from person p where id = ?,123` 
+Or you can **provide your own hash *per* query**, eg, prefix-`p.123` to represent `select * from person p where id = ?,123` 
 
 ## Getting Started
 
 ### Pre-Requisites
-mysql ([mysql](https://www.npmjs.com/package/mysql)/[mysql2](https://www.npmjs.com/package/mysql2)), and redis ([redis](https://www.npmjs.com/package/redis)/[ioredis](https://www.npmjs.com/package/ioredis). internally mysqlRedis relies on mysql/mysql2's `query` function and redis's `get` and `set` functions
+mysql ([mysql](https://www.npmjs.com/package/mysql)/[mysql2](https://www.npmjs.com/package/mysql2)), and redis ([redis](https://www.npmjs.com/package/redis)/[ioredis](https://www.npmjs.com/package/ioredis)). Internally MysqlRedis relies on mysql/mysql2's `query` function and redis's `get` and `set` functions
 
 For async/await api, you can use mysql2's promise api and [redis-async](https://www.npmjs.com/package/mysql-redis)
 
