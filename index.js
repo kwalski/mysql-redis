@@ -15,7 +15,7 @@ Object.freeze(HashTypes);
 const defaultCacheOptions = {
     expire: 2629746,
     keyPrefix: "sql.",
-    hashType: HashTypes.farmhash
+    hashType: HashTypes.farmhash32
 };
 
 const hash = (sql, hashType) => {
