@@ -4,10 +4,10 @@ const str64 = new String64();
 const crypto = require("crypto");
 
 const HashTypes = {
-    full: 0,
-    farmhash32: 1,
-    farmhash64: 2,
-    blake2b512: 3
+    farmhash32: 0,
+    farmhash64: 1,
+    blake2b512: 2,
+    full: 3
 };
 
 Object.freeze(HashTypes);
