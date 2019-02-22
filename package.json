@@ -4,7 +4,7 @@
   "description": "caching layer for mysql",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jasmine-node spec --verbose"
   },
   "keywords": [
     "node",
@@ -22,7 +22,12 @@
     "farmhash": "^2.1.0",
     "string64": "^2.0.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "async-redis": "^1.1.7",
+    "jasmine-node": "^1.16.2",
+    "mysql2": "^1.6.5",
+    "redis": "^2.8.0"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/kwalski/mysql-redis.git"

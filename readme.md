@@ -7,7 +7,7 @@ Transform your mysql server with `Redis` caching layer for `mysql/mysql2`.
 - if redis is unavailable or errors, query will be served by mysql
 
 ## Use-case
-Use _along_ with mysql and redis. This is not a replacement of either. Use it with queries/stored procedures that only perform `select` and will return same result set everytime.
+Use _along_ with mysql and redis. This is not a replacement of either. Use it with queries/stored procedures that only perform `select` and will return same result set every time.
 
 - **No brainer** for retrieving static data, eg, `select * from countries`
 - Data that will not be updated once created, typically timeseries data like chat messages, logs
@@ -56,10 +56,10 @@ For async/await api, you can use mysql2's promise api and [async-redis](https://
 
 ### Usage
 ```
-const { MysqlRedis, HashTypes } = require("mysql-redis");
+const { MysqlRedis, HashTypes, Caching } = require("mysql-redis");
 
 // or if you use async await api
-const { MysqlRedisAsync, HashTypes } = require("mysql-redis");
+const { MysqlRedisAsync, HashTypes, Caching } = require("mysql-redis");
 ```
 
 ####  Creating an instance of MysqlRedis requires 
@@ -82,13 +82,28 @@ const { MysqlRedisAsync, HashTypes } = require("mysql-redis");
 	```
 - cache options (optional)  
 
+import `HashTypes` and `Caching` from mysql-redis
+
 ```
 const cacheOptions = {
     expiry: 2629746,// seconds, defaults to 30 days 
     keyPrefix: "sql.", // default
     hashType: HashTypes.farmhash32 //default
+    caching: Caching.CACHE //default
 };
+```
+`hashType` can be 
+-- HashTypes.farmhash32
+-- HashTypes.farmhash64
+-- HashTypes.blake2b512
+-- HashTypes.full
 
+`caching` can be 
+-- Caching.CACHE  (to get data from Redis when available)
+-- Caching.SKIP (to get results from mysql, do not save to redis)
+-- Caching.REFRESH (to get result from mysql and save to redis)
+	
+```
 const mysqlRedis = new MysqlRedis(
     mysqlConnection,
     redisConnection,
@@ -132,6 +147,7 @@ mysqlRedis.query('select * from logs where id =?",["some-log-id"],
 		expire:3600, 
 		hashType: HashTypes.farmhash64 
         //or hash: myHash <- provide your own 
+        // caching: Caching.SKIP or Caching.REFRESH or Caching.CACHE
 	}, 
 	(err,data,fields)=>{
 	console.log(data)
@@ -147,10 +163,16 @@ mysqlRedis.query('select * from logs where id =?",["some-log-id"],
 		expire:3600, 
 		hashType: HashTypes.farmhash64 
         //or hash: myHash <- provide your own 
+        // caching: Caching.SKIP or Caching.REFRESH or Caching.CACHE
 	});
 
 ```
+## Testing
 
+- Start mysql and redis servers on your local 
+- create user `test_user` with password `test_user` in mysql, no need to give any grants
+- then run 
+`npm run test `
  
 ## Contributing
 
