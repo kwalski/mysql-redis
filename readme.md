@@ -104,9 +104,12 @@ const cacheOptions = {
 - `HashTypes.full`
 
 `caching` can be 
--- Caching.CACHE  (to get data from Redis when available)
--- Caching.SKIP (to get results from mysql, do not save to redis)
--- Caching.REFRESH (to get result from mysql and save to redis)
+- `Caching.CACHE` to get data from Redis if available, else mysql
+- `Caching.SKIP` to get data from mysql, do not save to redis
+- `Caching.REFRESH` to get data from mysql and save to redis
+
+Options can be specified when creating mysqlRedis instance or overriden at the time of query.
+At query time, you can also provide a custom hash as *cacheOptions.hash* (ignores hashType if specified)
 	
 ```
 const mysqlRedis = new MysqlRedis(
