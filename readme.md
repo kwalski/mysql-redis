@@ -1,7 +1,7 @@
 
 # mysql-redis :rocket:
 
-Transform your mysql server with `Redis` caching layer for `mysql/mysql2`.
+Transform your mysql server with `Redis` caching layer for [mysql](https://www.npmjs.com/package/mysql)/[mysql2](https://www.npmjs.com/package/mysql2).
 - MysqlRedis checks if there is a cached result for the query in redis 
 - if not found in cache, it will retrieve data from mysql and on successful result cache it in redis for future queries
 - if redis is unavailable or errors, query will be served by mysql
@@ -26,7 +26,7 @@ In redis, the hash and query results are stored as key-value pair
   
 **farmhash32** ⚡🗜️
 Example redis key: *prefix.*`2jNDCJ`
-Fast!!! Over ~5 million hashes/s on reference machine. Most compact key.
+Fast!!! Over ~5 million hashes/s on reference machine. Most compact key.  (if you have millions of possible queries, these hashes can collide :collision:)
 
 **farmhash64** 
 Example redis key:  *prefix.*`DiHlF3yv0V$` 
@@ -37,12 +37,12 @@ fast (~2 million hashes/sec on reference machine )
 Example redis key: *prefix.*`4KbMOx3xJi+7mJNy0tDbju6NY9uHqOroDsG4rYjpHK1mEwXJokls5Ofdjs7iDsn3cAtibgUkT8RDdpCE2phhiQ==` 
 Crypto safe, ~500k hashes/sec on reference machine.
 Use it for caching millions of different queries (eg. chats, logs)
-Note that the key is longer than farmhash.
+Note that the key is longer than farmhash32/64.
 
 **full** 
 Matches full query string. Use this if you are paranoid or if your queries are smaller than blake2b512 hashes
 
-Or you can **provide your own hash *per* query**, eg, *prefix.*`p.123` to represent `select * from person p where id = ?,123` 
+Or you can **provide your own hash *per* query**, eg, *prefix.*`p.123` to represent `select * from person p where id = 123` 
 
 ## Getting Started
 
@@ -71,7 +71,12 @@ const { MysqlRedisAsync, HashTypes, Caching } = require("mysql-redis");
 - a mysql connection or pool promise 
 	``` 
 	// Example from mysql2 docs:
-	const  poolPromise  =  mysql.createPool({host:'localhost', user:  'root', database:  'test'}).promise(); 
+	const  poolPromise  =  mysql.createPool({
+                                    host:'localhost', 
+                                    user:  'root', 
+                                    database:  'test'
+                                })
+                                .promise();
 	```
 - async redis
 	```
@@ -93,10 +98,10 @@ const cacheOptions = {
 };
 ```
 `hashType` can be 
--- HashTypes.farmhash32
--- HashTypes.farmhash64
--- HashTypes.blake2b512
--- HashTypes.full
+- `HashTypes.farmhash32`
+- `HashTypes.farmhash64`
+- `HashTypes.blake2b512`
+- `HashTypes.full`
 
 `caching` can be 
 -- Caching.CACHE  (to get data from Redis when available)
@@ -169,11 +174,11 @@ mysqlRedis.query('select * from logs where id =?",["some-log-id"],
 ```
 ## Testing
 
-- Start mysql and redis servers on your local 
+- Start mysql and redis servers on your local (host 127.0.0.1, default ports)
 - create user `test_user` with password `test_user` in mysql, no need to give any grants
-- then run 
+- then run
 `npm run test `
- 
+
 ## Contributing
 
  Feel free to fork/send PR
