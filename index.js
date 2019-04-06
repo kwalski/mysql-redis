@@ -46,6 +46,20 @@ const hash = (sql, hashType) => {
   }
 };
 
+const parseRedisResult = (redisResult, key) => {
+  //[JSON.parse(redisResult), [{ cacheHit: key }]]
+  const fields = [{ cacheHit: key }];
+  try {
+    const r = JSON.parse(redisResult);
+    const result =
+      r.length > 0 && Array.isArray(r[0]) ? [r.push(fields)] : [r, fields];
+
+    return result;
+  } catch (e) {
+    return [redisResult, [{ cacheHit: key }]];
+  }
+};
+
 class MysqlRedis {
   constructor(mysqlConn, redisClient, cacheOptions) {
     this.mysqlConn = mysqlConn;
@@ -128,7 +142,7 @@ class MysqlRedis {
                       key,
                       JSON.stringify(
                         mysqlResult.length > 0 && Array.isArray(mysqlResult[0])
-                          ? mysqlResult[0]
+                          ? [mysqlResult[0]]
                           : mysqlResult
                       ),
                       "EX",
@@ -141,7 +155,7 @@ class MysqlRedis {
               }
             );
           } else {
-            return cb(null, JSON.parse(redisResult), [{ cacheHit: key }]);
+            return cb(null, parseRedisResult(redisResult, key));
           }
         });
     }
@@ -222,7 +236,7 @@ class MysqlRedisAsync {
             const redisResult = await this.redisClient.get(key);
 
             if (redisResult) {
-              resolve([JSON.parse(redisResult), [{ cacheHit: key }]]);
+              resolve(parseRedisResult(redisResult, key));
             } else {
               try {
                 const [mysqlResult, fields] = await this.mysqlConn.query(
@@ -233,7 +247,7 @@ class MysqlRedisAsync {
                   key,
                   JSON.stringify(
                     mysqlResult.length > 0 && Array.isArray(mysqlResult[0])
-                      ? mysqlResult[0]
+                      ? [mysqlResult[0]]
                       : mysqlResult
                   ),
                   "EX",
