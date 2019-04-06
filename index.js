@@ -47,7 +47,9 @@ const hash = (sql, hashType) => {
 };
 
 const parseRedisResult = (redisResult, key) => {
-  //[JSON.parse(redisResult), [{ cacheHit: key }]]
+  // queries return [rows,fields] but
+  // store procedures in mysql2 return [[rows,fields]]
+  // [JSON.parse(redisResult), [{ cacheHit: key }]]
   const fields = [{ cacheHit: key }];
   try {
     const r = JSON.parse(redisResult);
