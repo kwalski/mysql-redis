@@ -24,7 +24,7 @@
   },
   "devDependencies": {
     "async-redis": "^1.1.7",
-    "jasmine-node": "^1.16.2",
+    "jasmine-node": "^2.0.1",
     "mysql2": "^1.6.5",
     "redis": "^2.8.0"
   },
