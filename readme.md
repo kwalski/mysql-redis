@@ -91,7 +91,7 @@ import `HashTypes` and `Caching` from mysql-redis
 
 ```
 const cacheOptions = {
-    expiry: 2629746,// seconds, defaults to 30 days 
+    expire: 2629746,// seconds, defaults to 30 days 
     keyPrefix: "sql.", // default
     hashType: HashTypes.farmhash32 //default
     caching: Caching.CACHE //default
