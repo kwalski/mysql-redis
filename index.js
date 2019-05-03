@@ -1,13 +1,19 @@
-const farmhash = require("farmhash");
-const { String64 } = require("string64");
-const str64 = new String64();
+try {
+  var farmhash = require("farmhash");
+  const { String64 } = require("string64");
+  var str64 = new String64();
+} catch (ex) {
+  // console.info("farmhash is no longer a required dependency for mysql-redis");
+}
+
 const crypto = require("crypto");
 
 const HashTypes = {
   farmhash32: 0,
   farmhash64: 1,
   blake2b512: 2,
-  full: 3
+  full: 3,
+  md5: 5
 };
 
 const Caching = {
@@ -25,6 +31,12 @@ const defaultCacheOptions = {
   caching: Caching.CACHE
 };
 
+const md5Hash = sql =>
+  crypto
+    .createHash("md5")
+    .update(sql)
+    .digest("base64");
+
 const hash = (sql, hashType) => {
   switch (hashType) {
     case HashTypes.blake2b512:
@@ -38,11 +50,18 @@ const hash = (sql, hashType) => {
       return sql;
       break;
     case HashTypes.farmhash64:
-      return str64.toString64(Number.parseInt(farmhash.fingerprint32(sql)));
+      return !farmhash || !str64
+        ? md5Hash(sql)
+        : str64.toString64(Number.parseInt(farmhash.fingerprint32(sql)));
       break;
     case HashTypes.farmhash32:
+      return !farmhash || !str64
+        ? md5Hash(sql)
+        : str64.toString64(Number.parseInt(farmhash.fingerprint64(sql)));
+      break;
+    case HashTypes.md5:
     default:
-      return str64.toString64(Number.parseInt(farmhash.fingerprint64(sql)));
+      return md5Hash(sql);
   }
 };
 
