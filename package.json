@@ -1,6 +1,6 @@
 {
   "name": "mysql-redis",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "caching layer for mysql",
   "main": "index.js",
   "scripts": {
