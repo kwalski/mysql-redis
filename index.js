@@ -73,7 +73,7 @@ const parseRedisResult = (redisResult, key) => {
   try {
     const r = JSON.parse(redisResult);
     const result =
-      r.length > 0 && Array.isArray(r[0]) ? [r.push(fields)] : [r, fields];
+      r.length > 0 && Array.isArray(r[0]) ?[[r[0], fields]] : [r, fields];
 
     return result;
   } catch (e) {
