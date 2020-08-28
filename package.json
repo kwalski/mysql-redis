@@ -19,13 +19,13 @@
   "author": "Gi Singh",
   "license": "MIT",
   "dependencies": {
-    "farmhash": "^2.1.0",
+    "farmhash": "^3.1.0",
     "string64": "^2.0.0"
   },
   "devDependencies": {
     "async-redis": "^1.1.7",
-    "jasmine-node": "^1.16.2",
-    "mysql2": "^1.6.5",
+    "jasmine-node": "^3.0.0",
+    "mysql2": "^1.7.0",
     "redis": "^2.8.0"
   },
   "repository": {
