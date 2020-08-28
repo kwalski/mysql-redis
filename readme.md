@@ -5,6 +5,7 @@ Transform your mysql server with `Redis` caching layer for [mysql](https://www.n
 - MysqlRedis checks if there is a cached result for the query in redis
 - if not found in cache, it will retrieve data from mysql and on successful result cache it in redis for future queries
 - if redis is unavailable or errors, query will be served by mysql
+- zero external dependency (farmhash is now option after v0.7)
 
 ## Use-case
 
@@ -25,6 +26,10 @@ In redis, the hash and query results are stored as key-value pair
     #️⃣ => [{'1+2':3}]
 
 #### Currently supported hash types are:
+
+**md5hash** ⚡🗜️
+MD5hash is the new default to prevent non mandatory dependency on farmhash
+MD5 hash is generated without any external lib
 
 **farmhash32** ⚡🗜️
 Example redis key: _prefix._`2jNDCJ`
@@ -58,9 +63,6 @@ For async/await api, you can use mysql2's promise api and [async-redis](https://
 
 `npm i mysql-redis --save`
 
-If farmhash complains _No prebuilt binaries found_, then first build farmhash from source (you will need platform build tools)
-`npm install farmhash --build-from-source`
-
 ### Usage
 
 ```
@@ -79,23 +81,17 @@ const { MysqlRedisAsync, HashTypes, Caching } = require("mysql-redis");
 #### Creating an instance of MysqlRedisAsync requires
 
 - a mysql connection or pool promise
-  ```
-  // Example from mysql2 docs:
-  const  poolPromise  =  mysql.createPool({
-                                    host:'localhost',
-                                    user:  'root',
-                                    database:  'test'
-                                })
-                                .promise();
-  ```
+  `// Example from mysql2 docs: const poolPromise = mysql.createPool({ host:'localhost', user: 'root', database: 'test' }) .promise();`
 - async redis
 
-  ```
+  ````
   eg:
-  const  asyncRedis  =  require("async-redis");
-  const  redis  =  asyncRedis.createClient(redisOptions);
+  const asyncRedis = require("async-redis");
+  const redis = asyncRedis.createClient(redisOptions);
 
-  ```
+      	```
+
+  ````
 
 - cache options (optional)
 
@@ -103,9 +99,9 @@ import `HashTypes` and `Caching` from mysql-redis
 
 ```
 const cacheOptions = {
-    expiry: 2629746,// seconds, defaults to 30 days
+    expire: 2629746,// seconds, defaults to 30 days
     keyPrefix: "sql.", // default
-    hashType: HashTypes.farmhash32 //default
+    hashType: HashTypes.md5 //default
     caching: Caching.CACHE //default
 };
 ```
@@ -197,10 +193,14 @@ mysqlRedis.query('select * from logs where id =?",["some-log-id"],
 ## Testing
 
 - Start mysql and redis servers on your local (host 127.0.0.1, default ports)
-- create user `test_user` with password `test_user` in mysql, no need to give any grants
-- then run
+- create user `test_user` in mysql, no need to give any grants
 
-`npm run test `
+```
+CREATE USER 'test_user'@'%' IDENTIFIED BY PASSWORD 'User@123';
+```
+
+- then run
+  `npm run test`
 
 ## Contributing
 
@@ -213,3 +213,4 @@ Feel free to fork/send PR
 ## License
 
 This project is licensed under the [MIT](./LICENSE).
+

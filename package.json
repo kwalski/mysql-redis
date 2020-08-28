@@ -1,6 +1,6 @@
 {
   "name": "mysql-redis",
-  "version": "0.5.3",
+  "version": "0.7.1",
   "description": "caching layer for mysql",
   "main": "index.js",
   "scripts": {
@@ -18,15 +18,11 @@
   ],
   "author": "Gi Singh",
   "license": "MIT",
-  "dependencies": {
-    "farmhash": "^3.1.0",
-    "string64": "^2.0.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "async-redis": "^1.1.7",
     "jasmine-node": "^3.0.0",
-    "mysql2": "^1.7.0",
-    "redis": "^2.8.0"
+    "mysql2": "^1.7.0"
   },
   "repository": {
     "type": "git",
